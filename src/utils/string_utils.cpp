@@ -1,7 +1,9 @@
 #include <iostream>
-#include "string_utils.h"
+#include "utils/string_utils.h"
+#include "utils/console_styles.h"
 
 using std::cout;
+using namespace console_styles; // instead of having to call it as  console_styles::MOVE_UP_ONE_LINE, etc...
 
 std::string extract_filename(const std::string filePath)
 {
@@ -27,18 +29,28 @@ std::string trim_trailing_whitespace(const std::string filePath)
     return filePath.substr(0, last_char_idx + 1);
 }
 
-std::string removeDoubleQuotes(std::string filePath)
+std::string removeDoubleQuotes(const std::string filePath)
 {
     // For some systems the drag & drop files can contain quotes ex: "C:\Users\Documents..." <- "", so remove them
     if (filePath.length() > 1 && filePath.front() == '"' && filePath.back() == '"')
     {
-        filePath = filePath.substr(1, filePath.length() - 2);
-        return filePath;
+        return filePath.substr(1, filePath.length() - 2);
     }
     return filePath;
 }
 
-void clearLine()
+/**
+ * @brief Clear console lines
+ *
+ * @param numLines the number of lines to clear.
+ * @return * void
+ * @note
+ */
+void clearConsoleLines(const short numLines)
 {
-    cout << "\033[2K\r"; // ANSI escape code to clear the current line
+    for (int i = 0; i < numLines; i++)
+    {
+        cout << MOVE_UP_ONE_LINE;
+        cout << CLEAR_LINE;
+    }
 }

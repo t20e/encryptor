@@ -5,7 +5,7 @@
 
 std::string extract_filename(const std::string filePath);
 std::string trim_trailing_whitespace(const std::string filePath);
-std::string removeDoubleQuotes(std::string filePath);
-void clearLine();
+std::string removeDoubleQuotes(const std::string filePath);
+void clearConsoleLines(const short numLines);
 
 #endif 

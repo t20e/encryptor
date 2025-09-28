@@ -1,9 +1,7 @@
 #include <iostream>
 #include "utils/string_utils.h"
-#include "utils/console_styles.h"
 
 using std::cout;
-using namespace console_styles; // instead of having to call it as  console_styles::MOVE_UP_ONE_LINE, etc...
 
 std::string extract_filename(const std::string filePath)
 {
@@ -48,9 +46,9 @@ std::string removeDoubleQuotes(const std::string filePath)
  */
 void clearConsoleLines(const short numLines)
 {
-    for (int i = 0; i < numLines; i++)
-    {
-        cout << MOVE_UP_ONE_LINE;
-        cout << CLEAR_LINE;
-    }
+    // for (int i = 0; i < numLines; i++)
+    // {
+    //     cout << MOVE_UP_ONE_LINE;
+    //     cout << CLEAR_LINE;
+    // }
 }

@@ -7,11 +7,37 @@
 # Assign variable `CXX` to the clang++ compiler
 CXX = clang++ 
 
+# Assign CXXFLAGS variable that defines compiler flags
+# `-Wall` enable all compiler warnings
+# The `-MMD` and `-MP` Generate dependency (.d) files for header tracking . When you modify a header file, 'make' will know to recompile the source files that include that header file.
+CXXFLAGS = -std=c++23 -Wall -MMD -MP
+
+
 
 # ---------------------- DIRECTORIES ----------------------
 BUILD_DIR := ./build
-SRC_DIR := src
-TESTS_DIR := tests
+SRC_DIR := ./src
+TESTS_DIR := ./tests
+
+
+
+# ---------------------- PATHS & LIBRARIES ----------------------
+# Define include directory paths here for both the projects ./include and external libraries like (GTEST, FTXUI, etc..) from homebrew's include
+INCLUDE_PATHS := ./include /opt/homebrew/include
+# Linker library search paths
+LIBS_PATHS := /opt/homebrew/lib 
+
+# Generate compiler and linker flags from paths
+# The -I tells the compiler where to look for header files (#include <...>)
+# -I for includes, -L for library paths
+CPPFLAGS := $(addprefix -I,$(INCLUDE_PATHS))
+LDFLAGS := $(addprefix -L, $(LIBS_PATHS))
+
+# Libraries (FTXUI) to Link against for the main app
+APP_LDLIBS := -lftxui-dom -lftxui-screen -lftxui-component
+# Libraries (GTest) to link against for the test executable (test_encryptor)
+TEST_LDLIBS := -lgtest_main -lgtest -lgmock -lpthread
+
 
 
 # ---------------------- TARGETS ----------------------
@@ -20,48 +46,29 @@ APP_TARGET := ${BUILD_DIR}/encryptor
 TEST_TARGET := ${BUILD_DIR}/test_encryptor
 
 
-# ---------------------- FLAGS ----------------------
-# Assign CXXFLAGS variable that defines compiler flags
-# `-Wall` enable all compiler warnings
-# The `-MMD` and `-MP` Generate dependency (.d) files for header tracking . When you modify a header file, 'make' will know to recompile the source files that include that header file.
-CXXFLAGS = -std=c++23 -Wall -MMD -MP
-# Add this project's ./include and the homebrew include so we can grab the Google Test library
-INCLUDE_PATHS := ./include /opt/homebrew/include
-LIBS_PATHS := /opt/homebrew/lib
 
-# Generate compiler and linker flags from paths
-# The -I tells the compiler where to look for header files (#include <...>)
-# -I for includes, -L for library paths
-CPPFLAGS := $(addprefix -I,$(INCLUDE_PATHS))
-LDFLAGS := $(addprefix -L, $(LIBS_PATHS))
-
-# Libraries to link against
-# -L/opt/homebrew/lib tells the linker where to find the library files (.a or .dylib)
-# lgtest_main: GTest main() for tests, -lgtest: Google Test, -lgmock: Google Mock, -lpthread GTest requirement
-LDLIBS := -lgtest_main -lgtest -lgmock -lpthread
-
-
-# ---------------------- SOURCE FILES AUTOMATION ----------------------
+# ---------------------- SOURCE & OBJECT FILES ----------------------
 
 # Find all (.cpp) files recursively in the application source (./src) directory
 APP_SRCS := $(shell find $(SRC_DIR) -name "*.cpp")
 # Find all (.cpp) files recursively in the tests (./tests) directory
-
-
 TEST_SRCS := $(shell find $(TESTS_DIR) -name "*.cpp")
 
-# For testing, we need to compile te test code and the application code (excluding out projects main.cpp)
-APP_SRCS_FOR_TESTS := $(filter-out $(SRC_DIR)/main.cpp, $(APP_SRCS))
-
-
-# ---------------------- OBJECT FILES ----------------------
 # Generate lists of object (.o) file paths in the build directory. With an identical layout
 # 	Eg., src/main.cpp becomes build/main.o
-APP_OBJS := $(APP_SRCS:%.cpp=$(BUILD_DIR)/%.o)
-TEST_OBJS := $(TEST_SRCS:%.cpp=$(BUILD_DIR)/%.o) $(APP_SRCS_FOR_TESTS:%.cpp=$(BUILD_DIR)/%.o)
+APP_OBJS := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(APP_SRCS))
+# For test objects also add the objects from the final executable
+TEST_OBJS := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(TEST_SRCS))
+
+# For testing, we need all application objects except for the on containing our main()
+APP_OBJS_FOR_TESTS := $(filter-out $(BUILD_DIR)/$(SRC_DIR)/main.o, $(APP_OBJS))
 
 # Create a list of dependency files (.d) for header tracking
 DEPS := $(APP_OBJS:.o=.d) $(TEST_OBJS:.o=.d)
+
+# Tell 'make' where to find all source files for the compile rule below
+vpath %.cpp $(sort $(dir $(APP_SRCS) $(TEST_SRCS)))
+
 
 
 # ---------------------- RULES ----------------------
@@ -74,32 +81,30 @@ DEPS := $(APP_OBJS:.o=.d) $(TEST_OBJS:.o=.d)
 # PHONY targets are not actual files. This rule tells `Make` that `all`, `clean`, and 'test' are just commands to be executed. 
 .PHONY: all clean test
 
-# Default rule runs when `make` command is typed in the terminal, builds the main application.
+# Default rule, runs when `make` command is typed in the terminal, builds the main application.
 all:$(APP_TARGET)
 
-# Rule to build and run the tests with `make test`
+# Rule to build and run the test test_encryptor with `make test`
 test: $(TEST_TARGET)
 	@echo "Running tests..."
 	@./$(TEST_TARGET)
 
-
 # Rule for linking all object files into the final main application executable (encryptor).
-#  This rule only runs if the executable is missing or an object file has been modified.
-$(APP_TARGET): $(APP_OBJS)
-	@mkdir -p $(dir $@) # Ensure the build directory exists
-	@echo "Linking encryptor application: $@"
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+# 	This rule only runs if the executable is missing or an object file has been modified.
+$(APP_TARGET): $(APP_OBJS) 
+	@echo "Linking for the main app -> (encryptor): $@"
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(APP_LDLIBS)
 
 # Rule to link the test_encryptor executable
-$(TEST_TARGET): $(TEST_OBJS)
-	@mkdir -p $(dir $@) 
-	@echo "Linking test_encryptor application: $@"
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+# 	It depends on the test objects and the necessary object files from the main application
+$(TEST_TARGET): $(TEST_OBJS) $(APP_OBJS_FOR_TESTS)
+	@echo "Linking for the test app -> (test_encryptor): $@"
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(TEST_LDLIBS)
 
 
 # Rule to compile any source (.cpp) file into its corresponding object (.o) file in the build directory.
 $(BUILD_DIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@) # Create the build directory if it doesn't exist
 	@echo "Compiling: $<"
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 

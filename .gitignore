@@ -4,3 +4,6 @@ build
 
 # Ignore all encrypted files
 *.enc
+
+# Ignore the FTXUI library
+libs/FTXUI

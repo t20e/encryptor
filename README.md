@@ -15,8 +15,18 @@ Prerequisite:
   2. [FTXUI](https://github.com/ArthurSonzogni/FTXUI)
 
     ```shell
-    brew install googletest
-    brew install ftxui
+    brew install googletest;
+    brew install ftxui;
+    ```
+
+  3. Optional:
+     - [Bear](https://github.com/rizsotto/Bear)
+       - "Bear is a tool that generates a compilation database for clang tooling", mainly for the [clangD](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) intellisense VSC extension.
+
+    ```shell
+    brew install bear;
+    make clean;
+    bear -- make; # Creates a ./compile_commands.json that helps the clangd extension intellisense.
     ```
 
 ### Validating Methods

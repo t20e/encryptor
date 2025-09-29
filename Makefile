@@ -23,7 +23,7 @@ TESTS_DIR := ./tests
 
 # ---------------------- PATHS & LIBRARIES ----------------------
 # Define include directory paths here for both the projects ./include and external libraries like (GTEST, FTXUI, etc..) from homebrew's include
-INCLUDE_PATHS := ./include /opt/homebrew/include
+INCLUDE_PATHS := /opt/homebrew/include ./include
 # Linker library search paths
 LIBS_PATHS := /opt/homebrew/lib 
 

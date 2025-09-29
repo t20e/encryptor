@@ -7,3 +7,7 @@ build
 
 # Ignore the FTXUI library
 libs/FTXUI
+
+compile_commands.json
+
+.cache

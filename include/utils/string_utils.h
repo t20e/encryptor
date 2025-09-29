@@ -1,11 +1,14 @@
-#ifndef STRING_UTILS_H
-#define STRING_UTILS_H
+#pragma once
 
-#include <iostream>
+#include <string>
 
 std::string extract_filename(const std::string filePath);
-std::string trim_trailing_whitespace(const std::string filePath);
-std::string removeDoubleQuotes(const std::string filePath);
-void clearConsoleLines(const short numLines);
+// void clearConsoleLines(const short numLines);
 
-#endif 
+/**
+ * @brief Shorten the strings of path if they are too long.
+ *
+ * @param path The full path to a file
+ * @return std::string
+ */
+std::string shorten_path(const std::string &path);

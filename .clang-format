@@ -1,0 +1,12 @@
+# .clang-format configurations, can be place in users "HOME" directory to make the configurations Global!
+
+BasedOnStyle: Microsoft
+AlignAfterOpenBracket: AlwaysBreak
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: 'true'
+AlwaysBreakAfterReturnType: None
+BinPackParameters: 'false'
+Standard: Auto
+TabWidth: '4'
+UseTab: Always

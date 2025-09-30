@@ -2,7 +2,7 @@
 
 std::string shorten_path(const std::string &path)
 {
-	short maxlength = 64; // Max length a path string can be.
+	short maxlength = 48; // Max length a path string can be.
 	if (path.length() <= maxlength)
 	{
 		return path;
@@ -19,22 +19,21 @@ std::string shorten_path(const std::string &path)
 	return placeholder + suffix;
 }
 
+// std::string extract_filename(const std::string filePath)
+// {
+//     // Extract a filename from full string path.
+//     size_t last_slash_idx = filePath.find_last_of("/\\"); // The index of the last "/" 0 based-indexing
+//     if (std::string::npos != last_slash_idx)
+//     {
+//         return filePath.substr(last_slash_idx + 1);
+//     }
+//     else
+//     {
+//         return filePath;
+//     }
+// }
 
-std::string extract_filename(const std::string filePath)
-{
-    // Extract a filename from full string path.
-    size_t last_slash_idx = filePath.find_last_of("/\\"); // The index of the last "/" 0 based-indexing
-    if (std::string::npos != last_slash_idx)
-    {
-        return filePath.substr(last_slash_idx + 1);
-    }
-    else
-    {
-        return filePath;
-    }
-}
-
- 
+// boy
 
 // /**
 //  * @brief Clear console lines

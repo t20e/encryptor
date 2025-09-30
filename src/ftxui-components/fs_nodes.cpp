@@ -1,6 +1,7 @@
 // File System Nodes
 
 #include "ftxui_components/fs_nodes.h"
+#include "ftxui/dom/elements.hpp"
 
 Component CreateFileNode(fs::path path, std::function<void(std::string)> on_file_selected_callback)
 {
@@ -35,6 +36,12 @@ Component CreateFileNode(fs::path path, std::function<void(std::string)> on_file
 CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::string)> on_file_selection_callback)
 	: path_(std::move(path)), on_file_selected_callback_(std::move(on_file_selection_callback))
 {
+	// NOTE: A header in this case is one line of the filesystem in window_2.
+	//  example:
+	//          ↓ Downloads  is one header
+	//              ↓ file.text is one header
+	//          → Documents is one header
+
 	// Use a flexible renderer for the header, so we can dynamically change the
 	// arrow of directory whether its open or not.
 	auto header = Renderer([this](bool focused) {
@@ -95,12 +102,11 @@ CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::
 	Add(Container::Vertical({interactive_header, conditional_children}));
 }
 
+// TODO add `use arrows keys to navigate above the Home directory`
 // Class Member function Implementation
 void CreateDirectoryNode::LoadContents()
-{ // Only runs when needed, i.e., user
-	// clicks to open a
-	// directory
-
+{
+	// Only runs when needed, i.e., user clicks to open a directory
 	children_loaded_ = true;
 	// Store all the children components in a list
 	std::vector<Component> children;
@@ -115,7 +121,6 @@ void CreateDirectoryNode::LoadContents()
 	}
 	catch (const fs::filesystem_error &)
 	{
-		// cout << "ERROR LOADING FILE"; // TODO finish errors, handle
 		// permission errors by adding a disabled text element
 		children_placeholder_->Add(Renderer([] { return text("🚫 Access Denied") | dim; }));
 		return;
@@ -147,7 +152,6 @@ void CreateDirectoryNode::LoadContents()
 			children.push_back(CreateFileNode(entry.path(), on_file_selected_callback_));
 		}
 	}
-
 	// Replace the placeholder with a new container holding real children.
 	children_placeholder_->DetachAllChildren(); // clear the placeholder
 	children_placeholder_->Add(Container::Vertical(std::move(children)));

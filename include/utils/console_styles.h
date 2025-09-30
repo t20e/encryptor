@@ -1,7 +1,6 @@
 // #pragma once
 
-// TODO is this needed if im using FTXUI to render?
-
+// BELOW NOT NEEDED FTXUI TAKES OVER
 // console styles not needed, FTXUI takes care.
 // namespace console_styles
 // {

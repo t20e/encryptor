@@ -23,14 +23,16 @@ Component CreateFileNode(fs::path path, std::function<void(std::string)> on_file
 
 /**
  * @brief Create a directory node tree with child components.
- *
- * @param path Path to the file or directory.
- * @param on_file_selected_callback Callback function when user selects a file.
- * @return A FTXUI Component.
  */
 class CreateDirectoryNode : public ftxui::ComponentBase
 {
   public:
+	/**
+	 * @brief Create a Directory Node object
+	 *
+	 * @param path Path to the file or directory.
+	 * @param on_file_selection_callback Callback function when user selects a file.
+	 */
 	CreateDirectoryNode(fs::path path, std::function<void(std::string)> on_file_selection_callback);
 
   private:

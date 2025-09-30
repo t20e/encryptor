@@ -1,13 +1,10 @@
-#include <iostream>
 #include <fstream>
 
 #include "utils/get_ascii_art.h"
 
 #include <ftxui/dom/elements.hpp>
 
-using std::cout;
 
-// TODO is the colors needed since FTXUI is taking over?
 
 // Read a ASCII art .txt file and return it as a FTXUI element.
 ftxui::Element get_ascii_art()

@@ -3,37 +3,54 @@
 std::string shorten_path(const std::string &path)
 {
 	short maxlength = 48; // Max length a path string can be.
-	if (path.length() <= maxlength)
-	{
+	if (path.length() <= maxlength) {
 		return path;
 	}
-	std::string placeholder = "/././.";
+
+	short maxFilenameLength = 32;
+	std::string placeholder = "/././";
+	std::string dotPlaceholder = "...";
+
+	// --- Suffix
 	short placeholderLength = placeholder.length();
 	short suffixLength = maxlength - placeholderLength;
 
-	// Determine how long the ending of the path should be
-	// short suffixLength = remainingLength / 2;
-
-	// Grab the ending part of the string
+	// Grab the ending part of the full path
 	std::string suffix = path.substr(path.length() - suffixLength);
-	return placeholder + suffix;
+	short first_slash_pos = suffix.find("/");
+	if (first_slash_pos != std::string::npos) {
+		// Keep only the part after the first slash
+		suffix = suffix.substr(first_slash_pos + 1);
+	}
+
+	// --- Handle large filenames
+	short last_slash_idx = suffix.find_last_of("/\\"); // The index of the last "/" 0 based-indexing
+
+	std::string dir_path = "";
+	std::string filename = suffix;
+
+	if (last_slash_idx != std::string::npos) {
+		// Extract teh directory path portion
+		dir_path = suffix.substr(0, last_slash_idx + 1);
+		filename = suffix.substr(last_slash_idx + 1);
+	}
+
+	if (filename.length() > maxFilenameLength) { // shorten the filename
+		short dotPlaceholderLength = dotPlaceholder.length();
+		// Split the filename in halves
+		short split_len = (maxFilenameLength - dotPlaceholderLength) / 2;
+
+		// Truncate the first halve
+		std::string front_part = filename.substr(0, split_len);
+		std::string back_part = filename.substr(filename.length() - split_len);
+
+		// Combine
+		filename = front_part + dotPlaceholder + back_part;
+	}
+
+	return placeholder + dir_path + filename;
 }
 
-// std::string extract_filename(const std::string filePath)
-// {
-//     // Extract a filename from full string path.
-//     size_t last_slash_idx = filePath.find_last_of("/\\"); // The index of the last "/" 0 based-indexing
-//     if (std::string::npos != last_slash_idx)
-//     {
-//         return filePath.substr(last_slash_idx + 1);
-//     }
-//     else
-//     {
-//         return filePath;
-//     }
-// }
-
-// boy
 
 // /**
 //  * @brief Clear console lines

@@ -1,16 +1,18 @@
 // File System Nodes
-
-#include "ftxui_components/fs_nodes.h"
+#include <algorithm>
+#include <filesystem>
+#include <functional>
 #include "ftxui/dom/elements.hpp"
 
-Component CreateFileNode(fs::path path, std::function<void(std::string)> on_file_selected_callback)
+#include "components/fs_nodes.h"
+
+Component CreateFileNode(fs::path path, std::function<void(fs::path)> on_file_selected_callback)
 {
 	auto renderer = Renderer([name = path.filename().string()](bool focused) {
 		auto element = text("📄 " + name);
 		// When the component is focused, i.e., user hovers over it with
 		// cursor, display it with inverted colors.ƒ
-		if (focused)
-		{
+		if (focused) {
 			element |= inverted;
 			// Tell the parent frame to scroll to this element.
 			element |= focus;
@@ -18,14 +20,14 @@ Component CreateFileNode(fs::path path, std::function<void(std::string)> on_file
 		return element;
 	});
 
-	// Make the component respond to the ENTER key.
-	return CatchEvent(renderer, [on_file_selected_callback, path_str = path.string()](Event e) {
+	// Event: When user clicks `ENTER` key on a file.
+	return CatchEvent(renderer, [on_file_selected_callback, path = path.string()](Event e) {
 		if (e == Event::Return)
 		//   for handling left mouse clicks
 		//   if (e == Event::Return || (e.is_mouse() && e.mouse().button ==
 		//   Mouse::Left && e.mouse().motion == Mouse::Pressed))
 		{
-			on_file_selected_callback(path_str);
+			on_file_selected_callback(path);
 			return true;
 		}
 		return false; // event not handled
@@ -33,14 +35,22 @@ Component CreateFileNode(fs::path path, std::function<void(std::string)> on_file
 }
 
 // Class Constructor implementation:
-CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::string)> on_file_selection_callback)
-	: path_(std::move(path)), on_file_selected_callback_(std::move(on_file_selection_callback))
+CreateDirectoryNode::CreateDirectoryNode(
+		fs::path path,
+		std::function<void(fs::path)> on_file_selection_callback,
+		std::function<void(fs::path)> on_folder_select_callback,
+		std::function<fs::path()> getSelectedFileFromCryptoWindow)
+
+	// Set this Class's respective member variables to what is being passed in.
+	:
+	path_(std::move(path)), on_file_selected_callback_(std::move(on_file_selection_callback)), on_folder_select_callback_(std::move(on_folder_select_callback)), getSelectedFileFromCryptoWindow_(std::move(getSelectedFileFromCryptoWindow))
 {
-	// NOTE: A header in this case is one line of the filesystem in window_2.
-	//  example:
-	//          ↓ Downloads  is one header
-	//              ↓ file.text is one header
-	//          → Documents is one header
+
+	// NOTE: A header in this case is one line of the filesystem in the File browser window.
+	//  Example:
+	//          ↓ Downloads  // is a header
+	//              ↓ file.text // is a header, located inside of ./Downloads
+	//          → Documents // is a header
 
 	// Use a flexible renderer for the header, so we can dynamically change the
 	// arrow of directory whether its open or not.
@@ -51,8 +61,7 @@ CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::
 		// Get the display name and handle cases where the filepath is a root
 		// "/" or ends with a backslash "/Users/username/test/"
 		std::string display_name = path_.filename().string();
-		if (display_name.empty())
-		{
+		if (display_name.empty()) {
 			display_name = path_.string();
 		}
 
@@ -61,8 +70,7 @@ CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::
 
 		// Add a visual indicator if the directory is focused, i.e, user is
 		// hovering over it.
-		if (focused)
-		{
+		if (focused) {
 			element |= inverted;
 			// Tell the parent frame to scroll to this element
 			element |= focus;
@@ -70,8 +78,8 @@ CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::
 		return element;
 	});
 
-	// make the header interactive. It should handle the `Enter` key bring
-	// pressed and left mouse click.
+	// Event: When user click `ENTER` key on directory, open it and show its
+	// contents
 	auto interactive_header = CatchEvent(header, [this](Event e) {
 		if (e == Event::Return)
 		//  For handling left mouse clicks
@@ -79,11 +87,15 @@ CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::
 		//  Mouse::Left && e.mouse().motion == Mouse::Pressed))
 		{
 			is_open_ = !is_open_;
-			if (is_open_ && !children_loaded_)
-			{
+			if (is_open_ && !children_loaded_) {
 				// if the directory is opened and the children elements
 				// haven't been loaded
 				LoadContents();
+
+				// Only send the selected file if a file to encrypt or decrypt has been selected and passed to the cryptography window.
+				if (getSelectedFileFromCryptoWindow_().string() != "") {
+					on_folder_select_callback_(path_.string());
+				}
 			}
 			return true;
 		}
@@ -92,8 +104,7 @@ CreateDirectoryNode::CreateDirectoryNode(fs::path path, std::function<void(std::
 
 	// The children are initially an empty placeholder.
 	// They are only shown if `is_open` is true.
-	auto indented_children =
-		Renderer(children_placeholder_, [this] { return hbox({text("  "), children_placeholder_->Render()}); });
+	auto indented_children = Renderer(children_placeholder_, [this] { return hbox({text("  "), children_placeholder_->Render()}); });
 
 	// Create children components that will only render if`is_open_` is true
 	auto conditional_children = indented_children | Maybe(&is_open_);
@@ -112,15 +123,11 @@ void CreateDirectoryNode::LoadContents()
 	std::vector<Component> children;
 	std::vector<fs::directory_entry> entries;
 
-	try
-	{
-		for (const auto &entry : fs::directory_iterator(path_))
-		{
+	try {
+		for (const auto &entry: fs::directory_iterator(path_)) {
 			entries.push_back(entry);
 		}
-	}
-	catch (const fs::filesystem_error &)
-	{
+	} catch (const fs::filesystem_error &) {
 		// permission errors by adding a disabled text element
 		children_placeholder_->Add(Renderer([] { return text("🚫 Access Denied") | dim; }));
 		return;
@@ -131,23 +138,22 @@ void CreateDirectoryNode::LoadContents()
 		bool is_a_dir = a.is_directory();
 		bool is_b_dir = b.is_directory();
 
-		if (is_a_dir != is_b_dir)
-		{
+		if (is_a_dir != is_b_dir) {
 			return is_a_dir; // directories come first
 		}
 		return a.path().filename() < b.path().filename(); // then sort by name
 	});
 
-	for (const auto &entry : entries)
-	{
-		if (entry.is_directory())
-		{
+	for (const auto &entry: entries) {
+		if (entry.is_directory()) {
 			// Recursively create another CreateDirectoryNode for
 			// subdirectories
-			children.push_back(Make<CreateDirectoryNode>(entry.path(), on_file_selected_callback_));
-		}
-		else if (entry.is_regular_file())
-		{
+			children.push_back(Make<CreateDirectoryNode>(
+					entry.path(),
+					on_file_selected_callback_,
+					on_folder_select_callback_,
+					getSelectedFileFromCryptoWindow_));
+		} else if (entry.is_regular_file()) {
 			// Files are interactive components
 			children.push_back(CreateFileNode(entry.path(), on_file_selected_callback_));
 		}

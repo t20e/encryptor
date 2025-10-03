@@ -7,6 +7,6 @@ using namespace ftxui;
 int main()
 {
 	Application app; // Instantiate
-	app.Run();		 // Run FTXUI loop
+	app.Run(); // Run FTXUI loop
 	return 0;
 }

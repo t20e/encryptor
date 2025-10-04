@@ -7,7 +7,7 @@ TEST(CaesarCipherTest, WorksCorrectly)
 {
     std::string originalText = "Hello, World! 123 START GO ||| FEARLESS _ DONER";
     int shift = 16;
-
+    // TODO Fix because caesarCipher now takes in bytes not strings!
     // --- Encryption ---
     std::string encryptedText = caesarCipher(originalText, shift);
     std::cout << "Original:  " << originalText << std::endl;

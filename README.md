@@ -1,7 +1,6 @@
 
 # Encryptor
 
-
 - TODO add more info about the project here
 
 - TODO add the stuff about the algo identifiers when encrypting and decrypting
@@ -18,7 +17,7 @@
         brew install ftxui;
         ```
 
-    - Optional:
+    - Optional: // TODO needed?
       - [Bear](https://github.com/rizsotto/Bear): "Bear is a tool that generates a compilation database for clang tooling", I use it for the [clangD](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) intellisense VSC extension.
 
         ```shell

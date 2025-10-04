@@ -1,6 +1,9 @@
 #pragma once
 
 #include <ftxui/component/component.hpp> // User input, Radiobox, components
+#include <vector>
+
+#include "AppModel.h"
 
 
 /**
@@ -10,24 +13,18 @@
 class FilePreview : public ftxui::ComponentBase
 {
 	public:
-		FilePreview();
+		FilePreview(AppModel &model);
 
 	private:
-		std::string in_content_;
-		std::string out_content_;
-		std::vector<unsigned char> inFileContents_;
-		std::vector<unsigned char> outFileContents_;
-
 		float scroll_x_ = 0.1f;
 		float scroll_y_ = 0.1f;
+		AppModel &model_;
 
-		void setInFileContents(std::vector<unsigned char> inFileContents)
-		{
-			this->inFileContents_ = inFileContents;
-		}
-
-		void setOutFileContents(std::vector<unsigned char> outFileContents)
-		{
-			this->outFileContents_ = outFileContents;
-		}
+		/**
+         * @brief Convert the selected file and its output (encrypted or decrypted) vector buffers into strings to render them in FTXUI.
+         * 
+         * @param buffer 
+         * @return std::string 
+         */
+		ftxui::Element convertBufferToString(const std::vector<unsigned char> &buffer);
 };

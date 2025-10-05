@@ -27,8 +27,7 @@ FilePreview::FilePreview(AppModel &model) :
 								text(shorten_path(this->model_.selected_file_path.string())),
 						}),
 						separatorLight(),
-						// TODO add the selected file path here.
-						convertBufferToString(this->model_.selectedFileContents) |
+						convertBufferToElements(this->model_.selectedFileContents) |
 								focusPositionRelative(scroll_x_, scroll_y_) | frame |
 								flex,
 				}) | flex,
@@ -36,13 +35,16 @@ FilePreview::FilePreview(AppModel &model) :
 
 		if (!this->model_.outFileContents.empty()) {
 			Element right_pane = vbox({
-										 text("Output File:") | color(Color::DeepPink1),
-										 convertBufferToString(this->model_.outFileContents) |
+										 text(this->model_.isDecrypting ? "Decrypted File:" : "Encrypted File:") | color(Color::DeepPink1),
+										 separatorLight(),
+										 convertBufferToElements(this->model_.outFileContents) |
 												 focusPositionRelative(scroll_x_, scroll_y_) | frame |
 												 flex,
 								 }) |
 								 flex;
+			elems.push_back(separatorEmpty());
 			elems.push_back(separatorDashed());
+			elems.push_back(separatorEmpty());
 			elems.push_back(right_pane);
 		}
 		return hbox({elems});
@@ -84,17 +86,21 @@ FilePreview::FilePreview(AppModel &model) :
 			border);
 }
 
-Element FilePreview::convertBufferToString(const std::vector<unsigned char> &buffer)
+Element FilePreview::convertBufferToElements(const std::vector<unsigned char> &buffer)
 {
-	const std::string file_header = "ENCRYPTOR";
-	std::string display_string;
+	std::string display_string = std::string(buffer.begin(), buffer.end());
 
-	// check if the content starts with the header.
-	if (buffer.size() >= file_header.size() && std::equal(file_header.begin(), file_header.end(), buffer.begin())) {
-		display_string = "---Encrypted File (Hex View) ---\n" + to_hex_string(buffer);
-	} else {
-		// Its a regular file, convert the vector buffer directly to a string.
-		display_string = std::string(buffer.begin(), buffer.end());
+	// Split the string by newline characters and create a FTXUI text element for each line.
+	Elements lines;
+	std::stringstream ss(display_string);
+	std::string line;
+
+	while (std::getline(ss, line, '\n')) {
+		lines.push_back(text(line));
 	}
-	return paragraph(display_string);
+
+	if (lines.empty()) { // If the original string was empty.
+		lines.push_back(text(""));
+	}
+	return vbox(lines);
 }

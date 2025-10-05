@@ -19,7 +19,12 @@ using namespace ftxui;
  * @param on_file_selected_callback Callback function when user selects a file.
  * @return A FTXUI Component.
  */
-Component CreateFileNode(AppModel &model, fs::path path, std::function<void(fs::path)> on_file_selected_callback);
+Component CreateFileNode(
+    AppModel &model,
+     fs::path path,
+      std::function<void(fs::path)> on_file_selected_callback,
+      std::function<void()> on_directory_selection_callback
+      );
 
 /**
  * @brief Create a directory node tree with child components.
@@ -39,7 +44,9 @@ class CreateDirectoryNode : public ftxui::ComponentBase
 		CreateDirectoryNode(
 				AppModel &model,
 				fs::path path,
-				std::function<void(fs::path)> on_file_selection_callback);
+				std::function<void(fs::path)> on_file_selection_callback,
+				std::function<void()> on_directory_selection_callback)
+                ;
 
 	private:
 		void LoadContents();
@@ -50,6 +57,7 @@ class CreateDirectoryNode : public ftxui::ComponentBase
 		std::function<void(fs::path)> on_file_selected_callback_;
 		std::function<void(fs::path)> on_folder_select_callback_;
 		std::function<fs::path()> getSelectedFileFromCryptoWindow_;
+		std::function<void()> on_directory_selection_callback_;
 
 		bool is_open_ = false;
 		bool children_loaded_ = false;

@@ -39,13 +39,15 @@ Component CreateFileNode(AppModel &model_, fs::path path, std::function<void(fs:
 CreateDirectoryNode::CreateDirectoryNode(
 		AppModel &model,
 		fs::path path,
-		std::function<void(fs::path)> on_file_selection_callback)
+		std::function<void(fs::path)> on_file_selection_callback,
+		std::function<void()> on_directory_selection_callback)
 
 	// Set this Class's respective member variables to what is being passed in.
 	:
 	model_(model),
 	path_(std::move(path)),
-	on_file_selected_callback_(std::move(on_file_selection_callback))
+	on_file_selected_callback_(std::move(on_file_selection_callback)),
+	on_directory_selection_callback_(on_directory_selection_callback)
 {
 	// NOTE: A header in this case is one line of the filesystem in the File browser window.
 	//  Example:
@@ -90,7 +92,8 @@ CreateDirectoryNode::CreateDirectoryNode(
 
 				// Only send the selected file if a file to encrypt or decrypt has been selected and passed to the cryptography window.
 				if (this->model_.selected_file_path.string() != "") {
-					this->model_.selected_folder_to_save_to_path_ = path_.string();
+					this->model_.selected_folder_to_save_to_path = path_.string();
+					this->on_directory_selection_callback_();
 				}
 			}
 			return true;
@@ -143,10 +146,7 @@ void CreateDirectoryNode::LoadContents()
 		if (entry.is_directory()) {
 			// Recursively create another CreateDirectoryNode for
 			// subdirectories
-			children.push_back(Make<CreateDirectoryNode>(
-					this->model_,
-					entry.path(),
-					on_file_selected_callback_));
+			children.push_back(Make<CreateDirectoryNode>(this->model_, entry.path(), on_file_selected_callback_, on_directory_selection_callback_));
 		} else if (entry.is_regular_file()) {
 			// Files are interactive components
 			children.push_back(CreateFileNode(this->model_, entry.path(), on_file_selected_callback_));

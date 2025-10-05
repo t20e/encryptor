@@ -7,6 +7,7 @@
 #include "AppModel.h"
 #include "components/crypto_window.h"
 #include "components/file_preview_window.h"
+#include "utils/file_utils.h"
 
 
 using namespace ftxui;
@@ -50,12 +51,20 @@ class Application
 		 *
 		 * @param path Full path to that file.
 		 */
-		void onFileSelected(const std::filesystem::path &path);
+		void onFileSelect(const std::filesystem::path &path);
+
+        /**
+         * @brief Callback function for when user selects a directory from the file browser, to save a file to.
+         * 
+         */
+		void onDirectorySelect();
+
+
 
 
 		/**
          * @brief Reset to default after file has been saved.
          * 
          */
-		void reset();
+		void resetApp();
 };

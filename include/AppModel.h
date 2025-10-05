@@ -24,13 +24,10 @@ struct AppModel
 		bool showFilePreviews = false;
 
 		// Define a header to add the to beginning of an encrypted file, to identify it.
-		//      Header -> ENCRYPTOR_1_
-		//                 the   _(int)_ is the algo identifier,
-		//                _1_ -> caesar_cipher, _2_ -> XOR, _3_ -> AES, etc...
-		const std::string FILE_HEADER_ = "ENCRYPTOR";
+		const std::string FILE_HEADER_IDENTIFIER = "ENCRYPTOR";
 
 		fs::path selected_file_path; // reset with fs::path{}
-		fs::path selected_folder_to_save_to_path_;
+		fs::path selected_folder_to_save_to_path;
 
 		std::unordered_map<int, algoMap> algosDict{
 				{
@@ -45,6 +42,7 @@ struct AppModel
 						{
 								{"name", "Caesar Cipher"},
 								{"prompt", "Algo: How much to shift the characters in the file?"},
+                                {"informUserHowToDecrypt", "To decrypt later, use the negative of the encryption shift size:"}
 						},
 				},
 				{

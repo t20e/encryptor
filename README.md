@@ -7,6 +7,8 @@
 
 **Cryptography:** A file encrypt/decrypt terminal user interface (TUI) built on `C++`.
 
+**NOTE:** This project is a portfolio showcase, don't use for state-of-the-art encryption, use `openssl` for that.
+
 - **Prerequisite:**
 
   - Install necessary packages with `homebrew` globally:
@@ -16,6 +18,7 @@
         brew install googletest;
         brew install ftxui;
         ```
+    - `clang` compiler.
 
     - Optional: // TODO needed?
       - [Bear](https://github.com/rizsotto/Bear): "Bear is a tool that generates a compilation database for clang tooling", I use it for the [clangD](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) intellisense VSC extension.

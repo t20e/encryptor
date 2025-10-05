@@ -16,15 +16,15 @@ class FilePreview : public ftxui::ComponentBase
 		FilePreview(AppModel &model);
 
 	private:
-		float scroll_x_ = 0.1f;
-		float scroll_y_ = 0.1f;
+		float scroll_x_ = 0.01f;
+		float scroll_y_ = 0.01f;
 		AppModel &model_;
 
 		/**
-         * @brief Convert the selected file and its output (encrypted or decrypted) vector buffers into strings to render them in FTXUI.
+         * @brief Convert a file's vector buffer byte data into FTXUI elements, to display them in the file preview window.
          * 
          * @param buffer 
          * @return std::string 
          */
-		ftxui::Element convertBufferToString(const std::vector<unsigned char> &buffer);
+		ftxui::Element convertBufferToElements(const std::vector<unsigned char> &buffer);
 };

@@ -3,7 +3,6 @@
 #include <string>
 
 std::string extract_filename(const std::string filePath);
-// void clearConsoleLines(const short numLines);
 
 /**
  * @brief Shorten the strings of path if they are too long.

@@ -8,17 +8,21 @@
 #include "ftxui/dom/elements.hpp"
 
 // My headers
-#include <utils/file_utils.h>
 #include "AppModel.h"
 #include "algos/caesar_cipher.h"
 #include "components/crypto_window.h"
+#include "utils/file_utils.h"
+#include "utils/ftxui_utils.h"
 #include "utils/string_utils.h"
 
 using namespace ftxui;
 
 // Class constructor
-CryptoWindow::CryptoWindow(AppModel &model) :
-	model_(model)
+CryptoWindow::CryptoWindow(
+		AppModel &model,
+		std::function<void()> resetApp) :
+	model_(model),
+	resetApp_(resetApp)
 {
 	// Setup the radio component with the items from algoDict
 	std::vector<std::string> algo_radio_ = setup_algo_radio();
@@ -26,6 +30,7 @@ CryptoWindow::CryptoWindow(AppModel &model) :
 	// Radiobox :Event that runs when the user selects an algo from the radiobox list.
 	auto on_radiobox_algo_change = [this] {
 		this->hashInput_ = ""; // Clear the text in the input field
+		this->informUserHowToDecrypt = "";
 	};
 
 	// Add input options:
@@ -40,34 +45,24 @@ CryptoWindow::CryptoWindow(AppModel &model) :
      * 
      */
 	newFolderInputOptions.on_change = [this] {
-		// --- Add `.enc` extension to the end of filename as user types.
-		const std::string filenameEnding = ".enc";
-		if (!newFileNameInput_.ends_with(filenameEnding)) {
-			newFileNameInput_ += filenameEnding;
+		if (!model_.isDecrypting) {
+			// --- Add `.enc` extension to the end of filename as user types.
+			const std::string filenameEnding = ".enc";
+			if (!newFileNameInput_.ends_with(filenameEnding)) {
+				newFileNameInput_ += filenameEnding;
+			}
 		}
 	};
-    
+
 	/**
      * @brief A lambda to track when a user types into the (hashInput_).
      * 
      */
 	hashInputOptions.on_change = [this] {
-		// TODO make it so that this lambda function doesn't run for every time the user types a character, maybe delay by a few seconds.
 		if (this->hashInput_.empty()) {
 			return;
 		}
-
-		std::vector<unsigned char> out;
-		int algoInput = std::stoi(this->hashInput_);
-
-		// --- Decrypt a file: ---
-		if (this->model_.isDecrypting) {
-
-		} else {
-			// --- Encrypt a file: ---
-			out = caesarCipher(this->model_.selectedFileContents, algoInput);
-		}
-		this->model_.outFileContents = out;
+		performCryptography();
 	};
 
 	// Initialize the components
@@ -116,14 +111,28 @@ CryptoWindow::CryptoWindow(AppModel &model) :
 		// Check if an algo has been selected to display the text input field.
 		if (this->selectedRadioBtn_ != 0) {
 			elem.push_back(text(algoHeader));
-			elem.push_back(hbox({
-					separatorEmpty(),
-					separatorEmpty(),
-					hashInput_Comp_->Render() | border | bgcolor(Color::White) | color(Color::White),
-					separatorEmpty(),
-					separatorEmpty(),
-			}));
-			if (!this->hashInput_.empty()) { // if the user has entered text, then prompt to create a new file.
+
+			if (!this->err_msg.empty()) {
+				elem.push_back(IndentText(this->err_msg, Color::Red));
+			}
+
+			elem.push_back(
+					hbox({
+							separatorEmpty(),
+							separatorEmpty(),
+							hashInput_Comp_->Render() | border | bgcolor(Color::White) | color(Color::White),
+							separatorEmpty(),
+							separatorEmpty(),
+
+					}));
+
+			if (!this->informUserHowToDecrypt.empty()) {
+				elem.push_back(IndentText(this->informUserHowToDecrypt, Color::Cyan));
+			}
+
+
+			// if the user has entered text, then prompt to create a new file.
+			if (!this->hashInput_.empty() && this->err_msg.empty()) {
 				elem.push_back(text("Create a new file:"));
 				elem.push_back(hbox({
 						separatorEmpty(),
@@ -138,11 +147,11 @@ CryptoWindow::CryptoWindow(AppModel &model) :
 							paragraph(std::format("Select a folder from the File browser window to save the {} file:", this->model_.isDecrypting ? "Decrypted" : "Encrypted")),
 							separatorEmpty(),
 					}));
-					if (!this->model_.selected_folder_to_save_to_path_.string().empty()) {
+					if (!this->model_.selected_folder_to_save_to_path.string().empty()) {
 						elem.push_back(vbox({
 								hbox({
 										separatorEmpty() | flex,
-										text(std::format("Selected folder to save to: {}", shorten_path(this->model_.selected_folder_to_save_to_path_.string()))),
+										text(std::format("Selected folder to save to: {}", shorten_path(this->model_.selected_folder_to_save_to_path.string()))),
 										separatorEmpty() | flex,
 								}),
 								hbox({
@@ -166,9 +175,10 @@ CryptoWindow::CryptoWindow(AppModel &model) :
 // Class methods
 void CryptoWindow::onSaveBtn()
 {
-	saveFile(this->model_.selectedFileContents, this->newFileNameInput_, this->model_.selected_folder_to_save_to_path_);
-	// TODO once save is implemented, call all reset() for all classes to go back to a clean state!
+	saveFile(model_.outFileContents, newFileNameInput_, model_.selected_folder_to_save_to_path, model_.isDecrypting ? "" : model_.FILE_HEADER_IDENTIFIER);
 
+	resetCrypto();
+	resetApp_();
 
 	// TODO The reset doesn't make the directory that has the new file saved to redrawn, so if I save a file to ./downloads and it was already opened then the file wont be shown in filebrowser. Maybe call filebrowser to draw it.
 }
@@ -184,4 +194,46 @@ std::vector<std::string> CryptoWindow::setup_algo_radio()
 		arr.push_back(algoName);
 	}
 	return arr;
+}
+
+
+void CryptoWindow::performCryptography()
+{
+	bool errorOccurred = false;
+
+	switch (this->selectedRadioBtn_) {
+		case 0: // None
+			break;
+		case 1:
+		{ // Caesar cipher
+			cryptoResult result = caesarCipher(this->model_.selectedFileContents, this->hashInput_);
+			// USe lambda std::visit to safely process the result
+			std::visit([this, &errorOccurred](auto &&arg) {
+				// Determine the type
+				using T = std::decay_t<decltype(arg)>;
+
+				if constexpr (std::is_same_v<T, std::vector<unsigned char>>) {
+					// Success
+					this->model_.outFileContents = arg;
+					if (!this->model_.isDecrypting) {
+						this->informUserHowToDecrypt = this->model_.algosDict[1]["informUserHowToDecrypt"] + " -" + this->hashInput_;
+					}
+				} else if constexpr (std::is_same_v<T, std::string>) {
+					// Error
+					this->err_msg = arg;
+					errorOccurred = true;
+				}
+			},
+					   result);
+			break;
+		}
+		default:
+			break;
+	}
+	if (errorOccurred) {
+		this->model_.outFileContents.clear();
+		this->informUserHowToDecrypt = "";
+	} else {
+		this->err_msg = "";
+	}
 }

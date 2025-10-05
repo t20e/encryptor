@@ -29,8 +29,13 @@ class CryptoWindow : public ComponentBase
 		Component newFileNameInput_Comp_;
 		std::string newFileNameInput_ = "";
 
+		std::string err_msg = "";
+		std::string informUserHowToDecrypt = "";
+
 		// Action button
 		Component actionButton_;
+
+		std::function<void()> resetApp_;
 
 		/**
          * @brief Set the up algo radio array (algo_radio_), with algorithms names from (algosDict)
@@ -38,6 +43,12 @@ class CryptoWindow : public ComponentBase
          * @return std::vector<std::string> 
          */
 		std::vector<std::string> setup_algo_radio();
+
+		/**
+         * @brief Perform the cryptography
+         * 
+         */
+		void performCryptography();
 
 
 		/**
@@ -52,24 +63,23 @@ class CryptoWindow : public ComponentBase
         *
         * @param path Full path to that file.
         */
-		void onFileSelected(const std::string &path);
+		void onFileSelected(
+				const std::string &path);
+
+		/**
+        * @brief Reset state variables back to default.
+        * 
+        */
+		void resetCrypto()
+		{
+			selectedRadioBtn_ = 0;
+			hashInput_ = "";
+			newFileNameInput_ = "";
+			err_msg = "";
+			informUserHowToDecrypt = "";
+		}
 
 
 	public:
-		CryptoWindow(AppModel &model);
-
-		// --- Getters & Setters ---
-		/**
-     * @brief Reset state variables back to default.
-     * 
-     */
-		void reset()
-		{
-			selectedRadioBtn_ = 0; // For the radioboxComp_
-			// Algorithm hash input
-			hashInput_ = "";
-
-			// New file name for the user to create.
-			newFileNameInput_ = "";
-		}
+		CryptoWindow(AppModel &model, std::function<void()> resetApp);
 };

@@ -9,38 +9,28 @@
 
 Component CreateFileNode(AppModel &model_, fs::path path, std::function<void(fs::path)> on_file_selected_callback)
 {
-	auto renderer = Renderer([name = path.filename().string()](bool focused) {
+	ButtonOption headerOption;
+	headerOption.transform = [name = path.filename().string()](const EntryState &s) {
 		auto element = text("📄 " + name);
 		// When the component is focused, i.e., user hovers over it with
 		// cursor, display it with inverted colors.ƒ
-		if (focused) {
+		if (s.focused) {
 			element |= inverted;
 			// Tell the parent frame to scroll to this element.
 			element |= focus;
 		}
 		return element;
-	});
-
-	// Event: When user clicks `ENTER` key on a file.
-	return CatchEvent(renderer, [on_file_selected_callback, path = path.string()](Event e) {
-		if (e == Event::Return)
-		//   for handling left mouse clicks
-		//   if (e == Event::Return || (e.is_mouse() && e.mouse().button ==
-		//   Mouse::Left && e.mouse().motion == Mouse::Pressed))
-		{
-			on_file_selected_callback(path);
-			return true;
-		}
-		return false; // event not handled
-	});
+	};
+	return Button("", [on_file_selected_callback, path] { on_file_selected_callback(path); }, headerOption);
 }
+
 
 // Class Constructor implementation:
 CreateDirectoryNode::CreateDirectoryNode(
-		AppModel &model,
-		fs::path path,
-		std::function<void(fs::path)> on_file_selection_callback,
-		std::function<void()> on_directory_selection_callback)
+	AppModel &model,
+	fs::path path,
+	std::function<void(fs::path)> on_file_selection_callback,
+	std::function<void()> on_directory_selection_callback)
 
 	// Set this Class's respective member variables to what is being passed in.
 	:
@@ -49,14 +39,8 @@ CreateDirectoryNode::CreateDirectoryNode(
 	on_file_selected_callback_(std::move(on_file_selection_callback)),
 	on_directory_selection_callback_(on_directory_selection_callback)
 {
-	// NOTE: A header in this case is one line of the filesystem in the File browser window.
-	//  Example:
-	//          ↓ Downloads  // is a header
-	//              ↓ file.text // is a header, located inside of ./Downloads
-	//          → Documents // is a header
-
-	// Use a flexible renderer for the header, so we can dynamically change the arrow of directory whether its open or not.
-	auto header = Renderer([this](bool focused) {
+	ButtonOption headerOption;
+	headerOption.transform = [&](const EntryState &s) {
 		// Determine the arrow based on the open state (is_open_)
 		std::string arrow = is_open_ ? "↓ " : "→ ";
 
@@ -70,36 +54,38 @@ CreateDirectoryNode::CreateDirectoryNode(
 		Element element = text(arrow + display_name);
 
 		// Add a visual indicator if the directory is focused, i.e, user is hovering over it.
-		if (focused) {
+		if (s.focused) {
 			element |= inverted;
 			// Tell the parent frame to scroll to this element
 			element |= focus;
 		}
 		return element;
-	});
+	};
 
-	// Event: When user click `ENTER` key on directory, open it and show its contents
-	auto interactive_header = CatchEvent(header, [this](Event e) {
-		if (e == Event::Return)
-		//  For handling left mouse clicks
-		//  if (e == Event::Return || (e.is_mouse() && e.mouse().button ==
-		//  Mouse::Left && e.mouse().motion == Mouse::Pressed))
-		{
-			is_open_ = !is_open_;
-			if (is_open_ && !children_loaded_) {
-				// if the directory is opened and the children elements haven't been loaded
-				LoadContents();
+	// NOTE: A header in this case is one line of the filesystem in the File browser window.
+	//  Example:
+	//          ↓ Downloads  // is a header
+	//              ↓ file.text // is a header, located inside of ./Downloads
+	//          → Documents // is a header
 
-				// Only send the selected file if a file to encrypt or decrypt has been selected and passed to the cryptography window.
-				if (this->model_.selected_file_path.string() != "") {
-					this->model_.selected_folder_to_save_to_path = path_.string();
-					this->on_directory_selection_callback_();
-				}
-			}
-			return true;
+	// This button allows the user to use both mouse left clicks and arrow keys to open a directory.
+	auto header_button = Button("", [this] {
+		// Check what the users goal is: to open and view a directory or to select that directory as the directory to save a file too.
+		if (this->model_.isSelectingSaveDirectory) {
+			this->model_.selected_folder_to_save_to_path = path_.string();
+			this->on_directory_selection_callback_(); //make the crypto window take focus, i.e, become front window
+			this->model_.isSelectingSaveDirectory = false;
+			return; // consume event
 		}
-		return false; // Event not handled
-	});
+
+		is_open_ = !is_open_;
+		if (is_open_ && !children_loaded_) {
+			// If the directory is opened and the children elements haven't been loaded.
+			LoadContents();
+		}
+	},
+								headerOption);
+
 
 	// The children are initially an empty placeholder. They are only shown if `is_open` is true.
 	auto indented_children = Renderer(children_placeholder_, [this] { return hbox({text("  "), children_placeholder_->Render()}); });
@@ -107,11 +93,20 @@ CreateDirectoryNode::CreateDirectoryNode(
 	// Create children components that will only render if`is_open_` is true
 	auto conditional_children = indented_children | Maybe(&is_open_);
 
-	// Add the button and the placeholder to this component
-	Add(Container::Vertical({interactive_header, conditional_children}));
+	auto component_container = Container::Vertical({header_button, conditional_children});
+
+	// Wrap the component is a Renderer lambda to check for the event of make an opened directories refresh to show newly added files.
+	auto refresh_wrapper = Renderer(component_container, [this, component_container] {
+		if (is_open_ && !this->model_.directoryToRefresh.empty() && model_.directoryToRefresh == path_) {
+			LoadContents(); // Reload its contents again from disk
+			model_.directoryToRefresh = fs::path{};
+		}
+		return component_container->Render();
+	});
+
+	Add(refresh_wrapper);
 }
 
-// TODO add `use arrows keys to navigate above the Home directory`
 // Class Member function Implementation
 void CreateDirectoryNode::LoadContents()
 {

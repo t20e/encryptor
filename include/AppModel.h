@@ -28,6 +28,9 @@ struct AppModel
 
 		fs::path selected_file_path; // reset with fs::path{}
 		fs::path selected_folder_to_save_to_path;
+        bool isSelectingSaveDirectory = false; // Flag for if the user is in the current state of selecting a save directory after encrypting or decrypting a file.
+        fs::path directoryToRefresh; // When a user saves a file to an already open directory, we need that directory in the file browser window to reload its children contents so that the new file is shown.
+
 
 		std::unordered_map<int, algoMap> algosDict{
 				{
@@ -41,22 +44,27 @@ struct AppModel
 						1,
 						{
 								{"name", "Caesar Cipher"},
-								{"prompt", "Algo: How much to shift the characters in the file?"},
-                                {"informUserHowToDecrypt", "To decrypt later, use the negative of the encryption shift size:"}
+								{"prompt", "How much to shift the characters in the file?"},
+                                {"informUserHowToDecrypt", "To decrypt later, use the negative of the encryption shift size:"},
+                                {"about", ""},
 						},
 				},
 				{
 						2,
 						{
 								{"name", "XOR Cipher"},
-								{"prompt", "Algo: //TODO"},
+								{"prompt", "//TODO"},
+                                {"informUserHowToDecrypt", ""},
+                                {"about", ""},
 						},
 				},
 				{
 						3,
 						{
 								{"name", "AES (Advanced Encryption Standard)"},
-								{"prompt", "Algo: // TODO"},
+								{"prompt", "// TODO"},
+                                {"informUserHowToDecrypt", ""},
+                                {"about", ""},
 						},
 				},
 		};

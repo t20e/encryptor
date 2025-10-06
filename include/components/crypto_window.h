@@ -11,8 +11,7 @@ using namespace ftxui;
 /**
  * @brief The Cryptography window.
  */
-class CryptoWindow : public ComponentBase
-{
+class CryptoWindow : public ComponentBase {
 	private:
 		// State variables
 		AppModel &model_;
@@ -52,7 +51,7 @@ class CryptoWindow : public ComponentBase
 
 
 		/**
-        * @brief # TODO
+        * @brief Save file to directory when the save button is pressed.
         *
         * @param window
         */
@@ -64,7 +63,11 @@ class CryptoWindow : public ComponentBase
         * @param path Full path to that file.
         */
 		void onFileSelected(
-				const std::string &path);
+			const std::string &path);
+
+
+	public:
+		CryptoWindow(AppModel &model, std::function<void()> resetApp);
 
 		/**
         * @brief Reset state variables back to default.
@@ -79,7 +82,8 @@ class CryptoWindow : public ComponentBase
 			informUserHowToDecrypt = "";
 		}
 
-
-	public:
-		CryptoWindow(AppModel &model, std::function<void()> resetApp);
+        // Setters & Getters
+        int getSelectedRadioBtn()const{
+            return selectedRadioBtn_;
+        }
 };

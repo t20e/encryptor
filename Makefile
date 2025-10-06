@@ -35,8 +35,9 @@ LDFLAGS := $(addprefix -L, $(LIBS_PATHS))
 
 # Libraries (FTXUI) to Link against for the main app
 APP_LDLIBS := -lftxui-dom -lftxui-screen -lftxui-component
-# Libraries (GTest) to link against for the test executable (test_encryptor)
-TEST_LDLIBS := -lgtest_main -lgtest -lgmock -lpthread
+
+# Libraries (GTest, FTXUI) to link against for the test executable (test_encryptor)
+TEST_LDLIBS := -lgtest_main -lgtest -lgmock -lpthread $(APP_LDLIBS)
 
 
 

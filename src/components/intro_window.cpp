@@ -8,12 +8,13 @@ using namespace ftxui;
 Component CreateIntroWindow()
 {
 	auto content = Renderer([] {
-		const std::string intro = R"(	This program allows you to encrypt and decrypt files. It is built on C++, utiling the FTXUI library for displaying over the terminal, and the GTest library for testing.)";
+		const std::string intro = "This program allows you to encrypt and decrypt files. It is built on C++, utiling the GTest library for testing, and the FTXUI library to display in the terminal.";
 
 		return vbox({
 				separatorEmpty(), // Separates without adding a line between.
 				paragraph(intro),
 				separatorEmpty(),
+                text("How to use:"),
 				separatorEmpty(),
 				IndentText("1. Click the `File browser` window to select the file you want to encrypt or decrypt."),
 				separatorEmpty(),

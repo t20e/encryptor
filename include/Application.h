@@ -18,8 +18,7 @@ using namespace ftxui;
  * from here.
  *
  */
-class Application
-{
+class Application {
 	public:
 		Application(); // Constructor
 		void Run(); // Method to start the FTXUI event loop
@@ -34,11 +33,11 @@ class Application
 
 		// --- FTXUI Components ---
 		// In FTXbUI u can't just drop a Component's render result into another renderer, you must make the component itself part of the hierarchy. Otherwise, you lose the event handling, so no interactive events are captured.
-		std::shared_ptr<FilePreview> filePreview_;
+		std::shared_ptr<FilePreview> filePreviewPtr_; 
 
-		Component fileBrowser; // rendered inside the fileBrowserWindow
+		Component fileBrowser_; // rendered inside the fileBrowserWindow
 
-		std::shared_ptr<CryptoWindow> cryptoWindow_;
+		std::shared_ptr<CryptoWindow> cryptoWindowPtr_;
 
 		// A container that holds all the windows.
 		Component all_windows_container_;
@@ -53,13 +52,11 @@ class Application
 		 */
 		void onFileSelect(const std::filesystem::path &path);
 
-        /**
+		/**
          * @brief Callback function for when user selects a directory from the file browser, to save a file to.
          * 
          */
 		void onDirectorySelect();
-
-
 
 
 		/**

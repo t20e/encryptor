@@ -8,14 +8,14 @@ AlignOperands: true
 AlignTrailingComments: false
 AlwaysBreakTemplateDeclarations: Yes
 BraceWrapping:
-    AfterCaseLabel: true
-    AfterClass: true
+    AfterCaseLabel: false
+    AfterClass: false
     AfterControlStatement: false
-    AfterEnum: true
+    AfterEnum: false
     AfterFunction: true
     AfterNamespace: false
-    AfterStruct: true
-    AfterUnion: true
+    AfterStruct: false
+    AfterUnion: false
     AfterExternBlock: false
     BeforeCatch: false
     BeforeElse: false
@@ -36,7 +36,7 @@ ColumnLimit: 0
 ReflowComments: false
 CompactNamespaces: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-ContinuationIndentWidth: 8
+ContinuationIndentWidth: 4
 AlwaysBreakAfterReturnType: None
 IncludeCategories:
     - Regex: "^<.*"

@@ -1,9 +1,12 @@
 
 # Encryptor
 
-- TODO add more info about the project here
-
-- TODO add the stuff about the algo identifiers when encrypting and decrypting
+- **//TODO's:**
+  
+- Add more info & pics about the project in this ReadMe.md.
+- Add the stuff about the algo identifiers when encrypting and decrypting
+- Make the ASCII art interactive.
+- Add the createCollapsible() to the cryptoWindow
 
 **Cryptography:** A file encrypt/decrypt terminal user interface (TUI) built on `C++`.
 

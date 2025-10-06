@@ -12,9 +12,7 @@ namespace fs = std::filesystem; // name space for file-system
 
 void saveFile(const std::vector<unsigned char> &buffer, std::string &filename, fs::path &saveToDirectory, const std::optional<std::string> &FILE_HEADER_IDENTIFIER)
 {
-
 	fs::path savePath = saveToDirectory / filename;
-
 
 	// Create and open a file stream in binary mode
 	std::ofstream file(savePath, std::ios::binary);
@@ -29,11 +27,11 @@ void saveFile(const std::vector<unsigned char> &buffer, std::string &filename, f
 		file.write(FILE_HEADER_IDENTIFIER->c_str(), FILE_HEADER_IDENTIFIER->size());
 	}
 
-	// Write raw vector data to the file.
+	// Write the raw vector data to the file.
 	// The write() needs a pointer to the data (const char*), and the number of bytes to write.
 	file.write(
-			reinterpret_cast<const char *>(buffer.data()),
-			buffer.size());
+		reinterpret_cast<const char *>(buffer.data()),
+		buffer.size());
 
 	// Check for writing errors:
 	if (file.fail()) {
@@ -51,7 +49,7 @@ std::vector<unsigned char> read_file_contents(const fs::path &filepath)
 	std::ifstream file(filepath, std::ios::binary | std::ios::ate);
 
 	if (!file.is_open()) {
-		// TODO //
+		// TODO  error handling//
 		// File not found, or no permissions, etc!.
 		return {};
 	}
@@ -72,7 +70,7 @@ std::vector<unsigned char> read_file_contents(const fs::path &filepath)
 		return buffer;
 	}
 
-	// TODO
+	// TODO error handling
 	// Error: failed to read the file
 	return {};
 }
@@ -103,8 +101,8 @@ bool checkIfEncryptedFile(const std::vector<unsigned char> &buffer, std::string 
 }
 
 std::vector<unsigned char> removeHeaderIdentifier(
-		const std::vector<unsigned char> &buffer,
-		const std::string &FILE_HEADER_IDENTIFIER)
+	const std::vector<unsigned char> &buffer,
+	const std::string &FILE_HEADER_IDENTIFIER)
 {
 	// Create a new vector that copies the data after the header
 	return std::vector<unsigned char>(buffer.begin() + FILE_HEADER_IDENTIFIER.length(), buffer.end());

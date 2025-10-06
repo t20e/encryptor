@@ -10,10 +10,21 @@
  * @brief A File Preview component to render the selected file and the encrypted or decrypt version of it to it's right.
  * 
  */
-class FilePreview : public ftxui::ComponentBase
-{
+class FilePreview : public ftxui::ComponentBase {
 	public:
 		FilePreview(AppModel &model);
+
+        // Getters & Setters
+		/**
+         * @brief Reset this class member variables back to default.
+         */
+		void reset()
+		{
+			scroll_x_ = 0.01f;
+			scroll_y_ = 0.01f;
+		}
+
+
 
 	private:
 		float scroll_x_ = 0.01f;

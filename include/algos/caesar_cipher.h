@@ -4,9 +4,8 @@
 #include <vector>
 #include <variant>
 
-// Type alias
-using cryptoResult = std::variant<std::vector<unsigned char>, std::string>; // return either a vector or a string
-
+//Type alias
+using cryptoResult = std::variant<std::vector<unsigned char>, std::string>; 
 using validationResult = std::tuple<bool, std::string, int>; 
 
 
@@ -21,15 +20,6 @@ using validationResult = std::tuple<bool, std::string, int>;
 cryptoResult caesarCipher(
 		const std::vector<unsigned char> &data,
 		const std::string &shift);
-
-
-/**
- * @brief Validate the users input for the caesar cipher shift.
- * 
- * @param shift The users shift input.
- * @return std::tuple<bool, std::string> The first element is 'true' if valid, 'false' otherwise. The second contains the error message if invalid.
- */
-
 
 
 /**

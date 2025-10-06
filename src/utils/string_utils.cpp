@@ -2,7 +2,7 @@
 
 std::string shorten_path(const std::string &path)
 {
-	short maxlength = 48; // Max length a path string can be.
+	short maxlength = 42; // Max length a path string can be.
 	if (path.length() <= maxlength) {
 		return path;
 	}

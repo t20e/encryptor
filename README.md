@@ -9,9 +9,11 @@
 
 **Cryptography:** A file encrypt/decrypt terminal user interface (TUI) built on `C++`. This project is a portfolio showcase, don't use for state-of-the-art encryption, use `openssl`.
 
-<img src="showcase_imgs/1.png" width="400px">
-<img src="showcase_imgs/2.png" width="400px">
-<img src="showcase_imgs/3.png" width="400px">
+<span align="center">
+    <img src="showcase_imgs/1.png" alt="First image showing app" width="32%" />
+    <img src="showcase_imgs/2.png" alt="Second image showing app" width="32%" />
+    <img src="showcase_imgs/3.png" alt="Third image showing app" width="32%" />
+</span>
 
 - **Prerequisite:**
 

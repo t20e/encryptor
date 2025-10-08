@@ -12,7 +12,7 @@ using namespace ftxui;
  * @param Co The color to display the content in.
  * @return ftxui::Element An hbox() element.
  */
-inline Element IndentText(const std::string &text_content, const Color &Co = Color::Black)
+inline Element IndentText(const std::string &text_content, const Color &Co = Color::Default)
 { // The `inline` allows the whole definition to be in this header file. Its an exception to ODR.
 	return hbox({
 			text("    "), // indentation

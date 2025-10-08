@@ -20,6 +20,10 @@ class CryptoWindow : public ComponentBase {
 		Component radioboxComp_;
 		int selectedRadioBtn_ = 0; // For the radioboxComp_
 
+        Component algoDetailsCollapsible_;
+        std::shared_ptr<std::string> collapsibleAlgoName_ptr_;
+        std::shared_ptr<std::string> collapsibleDesc_ptr_; 
+
 		// Algorithm hash input
 		Component hashInput_Comp_;
 		std::string hashInput_ = "";
@@ -29,6 +33,7 @@ class CryptoWindow : public ComponentBase {
 		std::string newFileNameInput_ = "";
 
 		std::string err_msg = "";
+		std::string saving_err_msg = "";
 		std::string informUserHowToDecrypt = "";
 
 		// Action button
@@ -79,6 +84,7 @@ class CryptoWindow : public ComponentBase {
 			hashInput_ = "";
 			newFileNameInput_ = "";
 			err_msg = "";
+            saving_err_msg = "";
 			informUserHowToDecrypt = "";
 		}
 

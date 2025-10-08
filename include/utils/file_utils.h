@@ -1,10 +1,6 @@
 #pragma once
 
 #include <fstream>
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <vector>
 
 namespace fs = std::filesystem; // name space for file-system
 
@@ -54,5 +50,25 @@ bool checkIfEncryptedFile(const std::vector<unsigned char> &buffer, std::string 
  * @return std::vector<unsigned char> A new vector without the header.
  */
 std::vector<unsigned char> removeHeaderIdentifier(
-		const std::vector<unsigned char> &buffer,
-		const std::string &FILE_HEADER_IDENTIFIER);
+	const std::vector<unsigned char> &buffer,
+	const std::string &FILE_HEADER_IDENTIFIER);
+
+
+/**
+ * @brief Generates a hexadecimal string representation (hex dump) of a byte vector, specifically for safely previewing the contents of binray files. The output is formatted into rows of 1 bytes. each prefixed with its address offset.
+ * 
+ * @param buffer A vector of bytes.
+ * @param max_bytes The maximum number of bytes from the buffer to process for the previewer.
+ * @return std::string A formatted string containing the hex dump.
+ */
+std::string to_hex_preview(const std::vector<unsigned char> &buffer, size_t max_bytes = 4096);
+
+
+/**
+ * @brief Determine if a data buffer is likely binary. Checks for null terminators and non-printable characters which are common in binary files and rare in plain text files, however it is not a guaranteed check!
+ * 
+ * @param buffer Vector of bytes to check.
+ * @return true 
+ * @return false 
+ */
+bool is_likely_binary(const std::vector<unsigned char> &buffer);

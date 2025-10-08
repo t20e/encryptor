@@ -2,14 +2,12 @@
 #include <ftxui/component/component.hpp>
 
 /**
- * @brief Create a Collapsible component that gives details about the cryptography algorithm
+ * @brief Create a Collapsible component that displays details about the cryptography algorithm.
  * 
- * @param algoName The name of the algorithm 
- * @param description The description of the algorithm
+ * @param algoName_ptr Pointer to the algo name.
+ * @param description_ptr Pointer to the description of the algorithm.
  * @return ftxui::Component 
  */
 ftxui::Component createCollapsible(
-	std::string &algoName,
-	std::string &description);
-
- 
+	std::shared_ptr<std::string> algoName_ptr,
+	std::shared_ptr<std::string> description_ptr);

@@ -21,25 +21,25 @@ FilePreview::FilePreview(AppModel &model) :
 
 		// Convert buffers to elements inside the renderer lambda so to update the contents when needed.
 		Elements elems = {
-				vbox({
-						hbox({
-								text("Selected File:") | color(Color::DeepPink1),
-								text(shorten_path(this->model_.selected_file_path.string())),
-						}),
-						separatorLight(),
-						convertBufferToElements(this->model_.selectedFileContents) |
-								focusPositionRelative(scroll_x_, scroll_y_) | frame |
-								flex,
-				}) | flex,
+			vbox({
+				hbox({
+					text("Selected File:") | color(Color::DeepPink1),
+					text(shorten_path(this->model_.selected_file_path.string())),
+				}),
+				separatorLight(),
+				convertBufferToElements(this->model_.selectedFileContents) |
+					focusPositionRelative(scroll_x_, scroll_y_) | frame |
+					flex,
+			}) | flex,
 		};
 
 		if (!this->model_.outFileContents.empty()) {
 			Element right_pane = vbox({
-										 text(this->model_.isDecrypting ? "Decrypted File:" : "Encrypted File:") | color(Color::DeepPink1),
-										 separatorLight(),
-										 convertBufferToElements(this->model_.outFileContents) |
-												 focusPositionRelative(scroll_x_, scroll_y_) | frame |
-												 flex,
+									 text(this->model_.isDecrypting ? "Decrypted File:" : "Encrypted File:") | color(Color::DeepPink1),
+									 separatorLight(),
+									 convertBufferToElements(this->model_.outFileContents) |
+										 focusPositionRelative(scroll_x_, scroll_y_) | frame |
+										 flex,
 								 }) |
 								 flex;
 			elems.push_back(separatorEmpty());
@@ -73,22 +73,30 @@ FilePreview::FilePreview(AppModel &model) :
 
 
 	Add(
-			Container::Vertical({
-					Container::Horizontal({
-							scrollable_content | flex,
-							scrollbar_y,
-					}) | flex,
-					Container::Horizontal({
-							scrollbar_x,
-							Renderer([] { return text(L" "); }),
-					}),
-			}) |
-			border);
+		Container::Vertical({
+			Container::Horizontal({
+				scrollable_content | flex,
+				scrollbar_y,
+			}) | flex,
+			Container::Horizontal({
+				scrollbar_x,
+				Renderer([] { return text(L" "); }),
+			}),
+		}) |
+		border);
 }
 
 Element FilePreview::convertBufferToElements(const std::vector<unsigned char> &buffer)
 {
-	std::string display_string = std::string(buffer.begin(), buffer.end());
+	std::string display_string;
+
+	// Check if the file contents are binary or text
+	if (is_likely_binary(buffer)) {
+		display_string = to_hex_preview(buffer);
+	} else {
+		display_string = std::string(buffer.begin(), buffer.end());
+	}
+
 
 	// Split the string by newline characters and create a FTXUI text element for each line.
 	Elements lines;

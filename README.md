@@ -2,15 +2,16 @@
 # Encryptor
 
 - **//TODO's:**
-  
-- Add more info & pics about the project in this ReadMe.md.
-- Add the stuff about the algo identifiers when encrypting and decrypting
-- Make the ASCII art interactive.
-- Add the createCollapsible() to the cryptoWindow
+  - Make the ASCII art interactive.
+  - Add algorithms:
+    - XOR
+    - AES
 
-**Cryptography:** A file encrypt/decrypt terminal user interface (TUI) built on `C++`.
+**Cryptography:** A file encrypt/decrypt terminal user interface (TUI) built on `C++`. This project is a portfolio showcase, don't use for state-of-the-art encryption, use `openssl`.
 
-**NOTE:** This project is a portfolio showcase, don't use for state-of-the-art encryption, use `openssl` for that.
+<img src="showcase_imgs/1.png" width="400px">
+<img src="showcase_imgs/2.png" width="400px">
+<img src="showcase_imgs/3.png" width="400px">
 
 - **Prerequisite:**
 
@@ -21,31 +22,17 @@
         brew install googletest;
         brew install ftxui;
         ```
+
     - `clang` compiler.
-
-    - Optional: // TODO needed?
-      - [Bear](https://github.com/rizsotto/Bear): "Bear is a tool that generates a compilation database for clang tooling", I use it for the [clangD](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) intellisense VSC extension.
-
-        ```shell
-        brew install bear;
-        make clean;
-        bear -- make; # Creates a ./compile_commands.json that helps the clangD extension.
-        ```
 
 ## Validating Encryptions
 
-Check if the decrypted file is the same as the original pre-encrypted file.
+Check if a decrypted file is the same as the original pre-encrypted file.
 
 - Compare hashes with `sha256sum`
 
     ```shell
     sha256sum file_to_encrypt_orig.txt decrypted_file.txt
-    ```
-
-- Or use `diff`:
-
-    ```shell
-    diff file_to_encrypt_orig.txt file_to_encrypt.txt
     ```
 
 ## How To Build & Install Locally

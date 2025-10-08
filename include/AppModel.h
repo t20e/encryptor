@@ -46,7 +46,7 @@ struct AppModel
 								{"name", "Caesar Cipher"},
 								{"prompt", "How much to shift the characters in the file?"},
                                 {"informUserHowToDecrypt", "To decrypt later, use the negative of the encryption shift size:"},
-                                {"about", ""},
+                                {"description", "The Caesar Cipher algorithm is named after Julius Caesar who implemented it to protect military communications. It simply shifts characters around, and is easily deciphered!"},
 						},
 				},
 				{
@@ -55,7 +55,7 @@ struct AppModel
 								{"name", "XOR Cipher"},
 								{"prompt", "//TODO"},
                                 {"informUserHowToDecrypt", ""},
-                                {"about", ""},
+                                {"description", ""},
 						},
 				},
 				{
@@ -64,7 +64,7 @@ struct AppModel
 								{"name", "AES (Advanced Encryption Standard)"},
 								{"prompt", "// TODO"},
                                 {"informUserHowToDecrypt", ""},
-                                {"about", ""},
+                                {"description", ""},
 						},
 				},
 		};

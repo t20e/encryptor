@@ -29,7 +29,7 @@ class Application {
 
 		// Get the user's home directory as the starting point of the collapsible list
 		fs::path home_dir_ = std::getenv("HOME") ? fs::path(getenv("HOME")) : fs::current_path();
-
+        std::string fileBrowserError_ = "";
 
 		// --- FTXUI Components ---
 		// In FTXbUI u can't just drop a Component's render result into another renderer, you must make the component itself part of the hierarchy. Otherwise, you lose the event handling, so no interactive events are captured.

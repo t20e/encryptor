@@ -32,9 +32,18 @@ CryptoWindow::CryptoWindow(
 	auto on_radiobox_algo_change = [this] {
 		this->hashInput_ = ""; // Clear the text in the input field
 		this->informUserHowToDecrypt = "";
-	};
 
-	// Initialize the component to empty.
+		// Add a collapsible drop-down for the details about the algorithm
+		if (this->selectedRadioBtn_ != 0) {
+			// Update the pointers value and the algoDetailsCollapsible_ will just read from them
+			*collapsibleAlgoName_ptr_ = model_.algosDict[this->selectedRadioBtn_]["name"];
+			*collapsibleDesc_ptr_ = model_.algosDict[this->selectedRadioBtn_]["description"];
+			;
+		} else {
+			*collapsibleAlgoName_ptr_ = "";
+			*collapsibleDesc_ptr_ = "";
+		}
+	};
 
 	// Add input options:
 	RadioboxOption radio_option;
@@ -64,7 +73,14 @@ CryptoWindow::CryptoWindow(
 
 	// Initialize the components
 	radioboxComp_ = Radiobox(algo_radio_, &this->selectedRadioBtn_, radio_option);
+
+	collapsibleAlgoName_ptr_ = std::make_shared<std::string>("");
+	collapsibleDesc_ptr_ = std::make_shared<std::string>("");
+	algoDetailsCollapsible_ = createCollapsible(collapsibleAlgoName_ptr_, collapsibleDesc_ptr_);
+	// Since the createCollapsible uses pointers we only need to instantiate algoDetailsCollapsible_ once, and it will just use what ever is stored at the pointer when called.
+
 	hashInput_Comp_ = Input(&this->hashInput_, "Input...", hashInputOptions);
+
 
 	newFileNameInput_Comp_ = Input(&this->newFileNameInput_, "File name...", newFolderInputOptions);
 
@@ -73,6 +89,7 @@ CryptoWindow::CryptoWindow(
 	// Group interactive components in a Container, which manages the events and focus between its children, then we can put them in an Element like vbox.
 	auto interactiveContainer = Container::Vertical({
 		radioboxComp_,
+		algoDetailsCollapsible_,
 		hashInput_Comp_,
 		newFileNameInput_Comp_,
 		actionButton_,
@@ -107,6 +124,10 @@ CryptoWindow::CryptoWindow(
 
 		// Check if an algo has been selected to display the text input field.
 		if (this->selectedRadioBtn_ != 0) {
+			// Add a drop down for details about the selected algo
+			elem.push_back(
+				vbox({algoDetailsCollapsible_->Render(), separatorEmpty(), separatorEmpty()}));
+
 			elem.push_back(text(algoInstruction));
 
 			if (!this->err_msg.empty()) {
@@ -115,28 +136,21 @@ CryptoWindow::CryptoWindow(
 
 			elem.push_back(
 				hbox({
-					separatorEmpty(),
-					separatorEmpty(),
-					hashInput_Comp_->Render() | border | bgcolor(Color::White) | color(Color::White),
-					separatorEmpty(),
-					separatorEmpty(),
-
+					hashInput_Comp_->Render() | border | flex,
+					separatorEmpty() | flex_grow,
 				}));
 
 			if (!this->informUserHowToDecrypt.empty()) {
 				elem.push_back(IndentText(this->informUserHowToDecrypt, Color::Cyan));
 			}
 
-
-			// if the user has entered text, then prompt to create a new file.
+			// If the user has entered text, then prompt to create a new file.
 			if (!this->hashInput_.empty() && this->err_msg.empty()) {
 				elem.push_back(text("Create a new file:"));
 				elem.push_back(hbox({
 					separatorEmpty(),
-					separatorEmpty(),
-					newFileNameInput_Comp_->Render() | border | bgcolor(Color::White) | color(Color::White),
-					separatorEmpty(),
-					separatorEmpty(),
+					newFileNameInput_Comp_->Render() | border | flex,
+					separatorEmpty() | flex_grow,
 				}));
 				if (!this->newFileNameInput_.empty()) {
 					elem.push_back(vbox({
@@ -145,18 +159,11 @@ CryptoWindow::CryptoWindow(
 						separatorEmpty(),
 					}));
 					if (!this->model_.selected_folder_to_save_to_path.string().empty()) {
-						elem.push_back(vbox({
-							hbox({
-								separatorEmpty() | flex,
-								text(std::format("Selected folder to save to: {}", shorten_path(this->model_.selected_folder_to_save_to_path.string()))),
-								separatorEmpty() | flex,
-							}),
-							hbox({
-								separatorEmpty() | flex,
-								actionButton_->Render(),
-								separatorEmpty() | flex,
-							}),
-						}));
+						elem.push_back(vbox({text(std::format("Selected folder to save to: {}", shorten_path(this->model_.selected_folder_to_save_to_path.string()))) | center, actionButton_->Render() | center}));
+					}
+					if (!this->saving_err_msg.empty()) {
+						elem.push_back(
+							text(this->saving_err_msg) | center | color(Color::Red) | bold);
 					}
 				}
 			}
@@ -172,7 +179,19 @@ CryptoWindow::CryptoWindow(
 // Class methods
 void CryptoWindow::onSaveBtn()
 {
-	saveFile(model_.outFileContents, newFileNameInput_, model_.selected_folder_to_save_to_path, model_.isDecrypting ? "" : model_.FILE_HEADER_IDENTIFIER);
+	try {
+		saveFile(model_.outFileContents, newFileNameInput_, model_.selected_folder_to_save_to_path, model_.isDecrypting ? "" : model_.FILE_HEADER_IDENTIFIER);
+	} catch (const std::ios_base::failure &e) { // File I/O error
+		this->saving_err_msg = "Error saving file, please try again";
+		return;
+	} catch (const std::exception &e) { // Catch any other standard exceptions
+		this->saving_err_msg = "Unexpected error occurred, please try again";
+		return;
+	} catch (...) { // if any error occurred that is caught by the catch blocks above.
+		return;
+		this->saving_err_msg = "Unkown error, please try again";
+		return;
+	}
 
 	// Signal to refresh directory
 	model_.directoryToRefresh = model_.selected_folder_to_save_to_path;

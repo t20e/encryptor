@@ -41,8 +41,12 @@ Application::Application()
 			this->onDirectorySelect();
 		});
 
-	auto fileBrowserHeaderComp = Renderer([] {
-		return paragraph("Use arrow keys or your mouse to navigate") | center;
+	auto fileBrowserHeaderComp = Renderer([this] {
+		auto error = text("");
+		if (!this->fileBrowserError_.empty()) {
+			error = text(this->fileBrowserError_) | center | color(Color::Red) | bold;
+		}
+		return vbox({paragraph("Use arrow keys or your mouse to navigate") | center, error});
 	});
 
 	auto fileBrowserWindow = Container::Vertical({
@@ -111,8 +115,23 @@ void Application::onFileSelect(const fs::path &filePath)
 {
 	model_->selected_file_path = filePath;
 
-	// Open the selected file
-	model_->selectedFileContents = read_file_contents(filePath);
+	try {
+		// Open the selected file
+		model_->selectedFileContents = read_file_contents(filePath);
+	} catch (const std::bad_alloc &e) { // File is too large to be loaded, the current way files are loading is into a vector of bytes, it can't properly store large files.
+		this->fileBrowserError_ = "File is too large to load into memory! Please select another.";
+		return;
+	} catch (const std::ios_base::failure &e) {
+		this->fileBrowserError_ = "Error reading file, please try again!";
+		return;
+	} catch (...) {
+		this->fileBrowserError_ = "Unknown error occurred, please try again!";
+		return;
+	}
+
+	if (!this->fileBrowserError_.empty()) {
+		this->fileBrowserError_ = "";
+	}
 
 	// Clear the out file contents if it was previously filled.
 	if (!model_->outFileContents.empty()) {
@@ -163,8 +182,8 @@ void Application::resetApp()
 	model_->selected_file_path = fs::path{};
 	model_->selected_folder_to_save_to_path = fs::path{};
 	model_->isSelectingSaveDirectory = false;
-
 	filePreviewPtr_->reset();
 
+	this->fileBrowserError_ = "";
 	this->fileBrowser_->TakeFocus();
 }
